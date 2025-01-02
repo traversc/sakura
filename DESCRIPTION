@@ -1,0 +1,25 @@
+Package: sakura
+Type: Package
+Title: Extension to R Serialization
+Version: 0.0.1
+Description: Exposes the 'refhook' functionality of R serialization for
+    alternative serialization of non-system reference objects.
+Authors@R: 
+    c(person(given = "Charlie",
+             family = "Gao",
+             role = c("aut", "cre"),
+             email = "charlie.gao@shikokuchuo.net",
+             comment = c(ORCID = "0000-0002-0750-061X")),
+      person(given = "Hibiki AI Limited",
+             role = "cph"))
+License: GPL (>= 3)
+BugReports: https://github.com/shikokuchuo/sakura/issues
+URL: https://shikokuchuo.net/sakura/, https://github.com/shikokuchuo/sakura/
+Encoding: UTF-8
+Depends: 
+    R (>= 3.5)
+Suggests:
+    arrow,
+    torch
+RoxygenNote: 7.3.2
+Config/build/compilation-database: true

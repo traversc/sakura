@@ -1,0 +1,91 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# sakura
+
+<!-- badges: start -->
+[![R-universe status](https://shikokuchuo.r-universe.dev/badges/sakura)](https://shikokuchuo.r-universe.dev/sakura)
+[![R-CMD-check](https://github.com/shikokuchuo/sakura/workflows/R-CMD-check/badge.svg)](https://github.com/shikokuchuo/sakura/actions)
+<!-- badges: end -->
+
+```
+  ________  
+ /\ sa    \
+/  \  ku   \
+\  /    ra /
+ \/_______/
+```
+
+### Extension to R Serialization
+
+An extension of R native serialization using the 'refhook' system for custom serialization and unserialization of non-system reference objects.
+
+Some R objects by their nature cannot be serialized, such as those accessed via an external pointer.
+
+Using the [`arrow`](https://arrow.apache.org/docs/r/) package as an example:
+
+```{r arrowfail,error=TRUE}
+library(arrow, warn.conflicts = FALSE)
+x <- list(as_arrow_table(iris), as_arrow_table(mtcars))
+
+unserialize(serialize(x, NULL))
+```
+In such cases, `sakura::serial_config()` can be used to create custom serialization configurations, specifying functions that hook into R's native serialization mechanism for reference objects ('refhooks').
+
+```{r arrowcfg}
+cfg <- sakura::serial_config(
+  class = "ArrowTabular",
+  sfunc = arrow::write_to_raw,
+  ufunc = function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE)
+)
+```
+This configuration can then be supplied as the 'hook' argument for `sakura::serialize()` and `sakura::unserialize()`.
+```{r arrowpass}
+sakura::unserialize(sakura::serialize(x, cfg), cfg)
+```
+This time, the arrow tables are handled seamlessly.
+
+Other types of serialization function are vectorized and in this case, the configuration should be created specifying `vec = TRUE`. Using `torch` as an example:
+
+```{r torchfail, error=TRUE}
+library(torch)
+x <- list(torch_rand(5L), runif(5L))
+
+unserialize(serialize(x, NULL))
+```
+Base R serialization above fails, but `sakura` serialization succeeds:
+
+```{r torchpass}
+cfg <- sakura::serial_config(
+  class = "torch_tensor",
+  sfunc = torch::torch_serialize,
+  ufunc = torch::torch_load,
+  vec = TRUE
+)
+
+sakura::unserialize(sakura::serialize(x, cfg), cfg)
+```
+
+### Installation
+
+The current development version is available from R-universe:
+
+```{r universe, eval=FALSE}
+install.packages("sakura", repos = "https://shikokuchuo.r-universe.dev")
+```
+
+--
+
+Please note that this project is released with a [Contributor Code of Conduct](https://shikokuchuo.net/sakura/CODE_OF_CONDUCT.html). By participating in this project you agree to abide by its terms.

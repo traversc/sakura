@@ -1,0 +1,14 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.log
+src/Makevars
+sakura.Rcheck/00_pkg_src/sakura/
+sakura.Rcheck/
+*.gz
+docs
+install
+inst/doc
+compile_commands.json
+.cache
