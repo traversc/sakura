@@ -22,6 +22,19 @@ An extension of R native serialization using the ‘refhook’ system for
 custom serialization and unserialization of non-system reference
 objects.
 
+This package was a request from a meeting of the [R
+Consortium](https://r-consortium.org/) [Marshalling and Serialization
+Working Group](https://github.com/RConsortium/marshalling-wg/) held at
+useR!2024 in Salzburg, Austria. It is designed to further discussion
+around a common framework for marshalling in R.
+
+It extracts the functionality embedded within the
+[nanonext](https://github.com/shikokuchuo/nanonext) and
+[mirai](https://github.com/shikokuchuo/mirai) async frameworks for use
+in other contexts.
+
+### Overview
+
 Some R objects by their nature cannot be serialized, such as those
 accessed via an external pointer.
 
@@ -113,16 +126,25 @@ cfg <- sakura::serial_config(
 sakura::unserialize(sakura::serialize(x, cfg), cfg)
 #> [[1]]
 #> torch_tensor
-#>  0.1275
-#>  0.2434
-#>  0.4176
-#>  0.4934
-#>  0.0567
+#>  0.4266
+#>  0.6847
+#>  0.7541
+#>  0.1171
+#>  0.7189
 #> [ CPUFloatType{5} ]
 #> 
 #> [[2]]
-#> [1] 0.99648417 0.03548333 0.05227065 0.28857983 0.04848588
+#> [1] 0.95554162 0.01231948 0.49277130 0.79085378 0.40704817
 ```
+
+### Acknowledgements
+
+We would like to thank in particular [R
+Core](https://www.r-project.org/contributors.html) for providing the
+interface to the R serialization mechanism, and [Luke
+Tierney](https://github.com/ltierney/) and [Mike
+Cheng](https://github.com/coolbutuseless) for their meticulous efforts
+in documentating it.
 
 ### Installation
 
