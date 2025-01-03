@@ -126,25 +126,28 @@ cfg <- sakura::serial_config(
 sakura::unserialize(sakura::serialize(x, cfg), cfg)
 #> [[1]]
 #> torch_tensor
-#>  0.4266
-#>  0.6847
-#>  0.7541
-#>  0.1171
-#>  0.7189
+#>  0.7018
+#>  0.4835
+#>  0.8654
+#>  0.2325
+#>  0.1030
 #> [ CPUFloatType{5} ]
 #> 
 #> [[2]]
-#> [1] 0.95554162 0.01231948 0.49277130 0.79085378 0.40704817
+#> [1] 0.453503897 0.862080483 0.565105654 0.009682012 0.224152206
 ```
 
 ### Acknowledgements
 
-We would like to thank in particular [R
-Core](https://www.r-project.org/contributors.html) for providing the
-interface to the R serialization mechanism, and [Luke
-Tierney](https://github.com/ltierney/) and [Mike
-Cheng](https://github.com/coolbutuseless) for their meticulous efforts
-in documentating it.
+We would like to thank in particular:
+
+- [R Core](https://www.r-project.org/contributors.html) for providing
+  the interface to the R serialization mechanism.
+- [Luke Tierney](https://github.com/ltierney/) and [Mike
+  Cheng](https://github.com/coolbutuseless) for their meticulous efforts
+  in documenting the serialization interface.
+- [Daniel Falbel](https://github.com/dfalbel) for discussion around an
+  efficient solution to serialization and transmission of torch tensors.
 
 ### Installation
 
