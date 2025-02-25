@@ -27,4 +27,14 @@ vec <- serialize(data.frame())
 vec
 unserialize(vec)
 
+\dontshow{if (requireNamespace("arrow", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+obj <- list(arrow::as_arrow_table(iris), arrow::as_arrow_table(mtcars))
+cfg <- serial_config(
+  "ArrowTabular",
+  arrow::write_to_raw,
+  function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE)
+)
+raw <- serialize(obj, cfg)
+unserialize(raw, cfg)
+\dontshow{\}) # examplesIf}
 }

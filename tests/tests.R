@@ -41,9 +41,9 @@ test_true(identical(unserialize(vec, cfg), obj))
 
 if (requireNamespace("arrow", quietly = TRUE)) {
   cfga <- serial_config(
-    class = "ArrowTabular",
-    sfunc = arrow::write_to_raw,
-    ufunc = function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE)
+    "ArrowTabular",
+    arrow::write_to_raw,
+    function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE)
   )
   test_type("pairlist", cfga)
   test_type("raw", serialize(obj, cfga))
