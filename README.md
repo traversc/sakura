@@ -29,9 +29,8 @@ useR!2024 in Salzburg, Austria. It is designed to further discussion
 around a common framework for marshalling in R.
 
 It extracts the functionality embedded within the
-[nanonext](https://github.com/shikokuchuo/nanonext) and
-[mirai](https://github.com/shikokuchuo/mirai) async frameworks for use
-in other contexts.
+[mirai](https://github.com/shikokuchuo/mirai) async framework for use in
+other contexts.
 
 ### Overview
 
@@ -43,9 +42,9 @@ example:
 
 ``` r
 library(arrow, warn.conflicts = FALSE)
-x <- list(as_arrow_table(iris), as_arrow_table(mtcars))
+obj <- list(as_arrow_table(iris), as_arrow_table(mtcars))
 
-unserialize(serialize(x, NULL))
+unserialize(serialize(obj, NULL))
 #> [[1]]
 #> Table
 #> Error: Invalid <Table>, external pointer to null
@@ -57,9 +56,9 @@ native serialization mechanism for reference objects (‘refhooks’).
 
 ``` r
 cfg <- sakura::serial_config(
-  class = "ArrowTabular",
-  sfunc = arrow::write_to_raw,
-  ufunc = function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE)
+  "ArrowTabular",
+  arrow::write_to_raw,
+  function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE)
 )
 ```
 
@@ -67,7 +66,7 @@ This configuration can then be supplied as the ‘hook’ argument for
 `sakura::serialize()` and `sakura::unserialize()`.
 
 ``` r
-sakura::unserialize(sakura::serialize(x, cfg), cfg)
+sakura::unserialize(sakura::serialize(obj, cfg), cfg)
 #> [[1]]
 #> Table
 #> 150 rows x 5 columns
@@ -116,25 +115,20 @@ unserialize(serialize(x, NULL))
 Base R serialization above fails, but `sakura` serialization succeeds:
 
 ``` r
-cfg <- sakura::serial_config(
-  class = "torch_tensor",
-  sfunc = torch::torch_serialize,
-  ufunc = torch::torch_load,
-  vec = TRUE
-)
+cfg <- sakura::serial_config("torch_tensor", torch::torch_serialize, torch::torch_load, vec = TRUE)
 
 sakura::unserialize(sakura::serialize(x, cfg), cfg)
 #> [[1]]
 #> torch_tensor
-#>  0.7018
-#>  0.4835
-#>  0.8654
-#>  0.2325
-#>  0.1030
+#>  0.6735
+#>  0.1192
+#>  0.2930
+#>  0.7962
+#>  0.7536
 #> [ CPUFloatType{5} ]
 #> 
 #> [[2]]
-#> [1] 0.453503897 0.862080483 0.565105654 0.009682012 0.224152206
+#> [1] 0.9682436 0.7885529 0.2699025 0.3752203 0.7983627
 ```
 
 ### Acknowledgements
