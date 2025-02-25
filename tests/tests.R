@@ -18,29 +18,37 @@ test_type("raw", serialize(df))
 test_class("data.frame", unserialize(serialize(df)))
 test_identical(unserialize(serialize(df)), df)
 test_error(unserialize(raw(1)), "data could not be unserialized")
+
+# mock torch serialization
+torch_serialize <- function(x) {
+  lapply(x, charToRaw)
+}
+torch_load <- function(x) {
+  lapply(x, rawToChar)
+}
+cfg <- serial_config(
+  class = "torch_tensor",
+  sfunc = torch_serialize,
+  ufunc = torch_load,
+  vec = TRUE
+)
+test_type("pairlist", cfg)
+obj <- list(tensor = "a very long tensor", vector = runif(1000L))
+class(obj) <- "torch_tensor"
+vec <- serialize(obj, cfg)
+test_type("raw", vec)
+test_true(identical(unserialize(vec, cfg), obj))
+
 if (requireNamespace("arrow", quietly = TRUE)) {
-  cfg <- serial_config(
+  cfga <- serial_config(
     class = "ArrowTabular",
     sfunc = arrow::write_to_raw,
     ufunc = function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE)
   )
-  test_type("pairlist", cfg)
+  test_type("pairlist", cfga)
+  test_type("raw", serialize(obj, cfga))
   x <- list(arrow::as_arrow_table(iris), arrow::as_arrow_table(mtcars))
-  vec <- serialize(x, cfg)
+  vec <- serialize(x, cfga)
   test_type("raw", vec)
-  test_true(all.equal(unserialize(vec, cfg), x))
-}
-if (requireNamespace("torch", quietly = TRUE) && FALSE) {
-  # disabled as torch install fails on CI
-  cfg2 <- serial_config(
-    class = "torch_tensor",
-    sfunc = torch:::torch_serialize,
-    ufunc = torch::torch_load,
-    vec = TRUE
-  )
-  obj <- list(tensor = torch::torch_rand(1000L), vector = runif(1000L))
-  vec <- serialize(obj, cfg2)
-  test_type("raw", vec)
-  test_type("raw", serialize(obj, cfg))
-  test_true(all.equal(unserialize(vec, cfg2), obj))
+  test_true(all.equal(unserialize(vec, cfga), x))
 }

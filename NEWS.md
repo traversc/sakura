@@ -1,4 +1,4 @@
-# sakura 0.0.1.9000 (development)
+# sakura (development version)
 
 # sakura 0.0.1
 
