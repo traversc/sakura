@@ -1,9 +1,14 @@
 Package: sakura
 Type: Package
 Title: Extension to R Serialization
-Version: 0.0.1.9000
-Description: Exposes the 'refhook' functionality of R serialization for
-    alternative serialization of non-system reference objects.
+Version: 0.1.0
+Description: Extends the functionality of R serialization by augmenting the
+    built-in reference hook system. This enhanced implementation allows optimal,
+    one-pass integrated serialization that combines R serialization with
+    third-party serialization methods. Facilitates the serialization of even
+    complex R objects, which contain non-system reference objects, such as those
+    accessed via external pointers, for use in parallel and distributed
+    computing.
 Authors@R: 
     c(person(given = "Charlie",
              family = "Gao",

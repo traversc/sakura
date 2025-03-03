@@ -18,15 +18,20 @@ status](https://shikokuchuo.r-universe.dev/badges/sakura)](https://shikokuchuo.r
 
 ### Extension to R Serialization
 
-An extension of R native serialization using the ‘refhook’ system for
-custom serialization and unserialization of non-system reference
-objects.
+Extends the functionality of R serialization by augmenting the built-in
+reference hook system. This enhanced implementation allows optimal,
+one-pass integrated serialization that combines R serialization with
+third-party serialization methods.
+
+Facilitates the serialization of even complex R objects, which contain
+non-system reference objects, such as those accessed via external
+pointers, for use in parallel and distributed computing.
 
 This package was a request from a meeting of the [R
 Consortium](https://r-consortium.org/) [Marshalling and Serialization
 Working Group](https://github.com/RConsortium/marshalling-wg/) held at
-useR!2024 in Salzburg, Austria. It is designed to further discussion
-around a common framework for marshalling in R.
+useR!2024 in Salzburg, Austria. It is designed to eventually provide a
+common framework for marshalling in R.
 
 It extracts the functionality embedded within the
 [mirai](https://github.com/shikokuchuo/mirai) async framework for use in
@@ -120,15 +125,15 @@ cfg <- sakura::serial_config("torch_tensor", torch::torch_serialize, torch::torc
 sakura::unserialize(sakura::serialize(x, cfg), cfg)
 #> [[1]]
 #> torch_tensor
-#>  0.6735
-#>  0.1192
-#>  0.2930
-#>  0.7962
-#>  0.7536
+#>  0.6972
+#>  0.0887
+#>  0.0576
+#>  0.9132
+#>  0.4515
 #> [ CPUFloatType{5} ]
 #> 
 #> [[2]]
-#> [1] 0.9682436 0.7885529 0.2699025 0.3752203 0.7983627
+#> [1] 0.79129934 0.31196571 0.70189057 0.53588851 0.00580887
 ```
 
 ### Acknowledgements
