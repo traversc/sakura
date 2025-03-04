@@ -10,6 +10,8 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 [![CRAN
 status](https://www.r-pkg.org/badges/version/sakura)](https://CRAN.R-project.org/package=sakura)
 [![R-CMD-check](https://github.com/shikokuchuo/sakura/workflows/R-CMD-check/badge.svg)](https://github.com/shikokuchuo/sakura/actions)
+[![Codecov test
+coverage](https://codecov.io/gh/shikokuchuo/sakura/graph/badge.svg)](https://app.codecov.io/gh/shikokuchuo/sakura)
 <!-- badges: end -->
 
       ________  
@@ -141,15 +143,15 @@ cfg <- sakura::serial_config("torch_tensor", torch::torch_serialize, torch::torc
 sakura::unserialize(sakura::serialize(x, cfg), cfg)
 #> [[1]]
 #> torch_tensor
-#>  0.1852
-#>  0.4499
-#>  0.1691
-#>  0.0582
-#>  0.4350
+#>  0.8650
+#>  0.9405
+#>  0.8917
+#>  0.1164
+#>  0.6513
 #> [ CPUFloatType{5} ]
 #> 
 #> [[2]]
-#> [1] 0.09273602 0.93122941 0.14078535 0.66689408 0.10639710
+#> [1] 0.3048439 0.5453249 0.8527941 0.5749037 0.7142786
 ```
 
 ### C Interface
