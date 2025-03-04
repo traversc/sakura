@@ -1,5 +1,7 @@
 # sakura (development version)
 
+* Implements a C level interface with public declarations in `sakura.h`.
+
 # sakura 0.1.0
 
 * Initial CRAN release.

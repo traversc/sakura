@@ -1,4 +1,4 @@
-// Copyright (C) 2024-2025 Hibiki AI Limited <info@hibiki-ai.com>
+// Copyright (C) 2025 Hibiki AI Limited <info@hibiki-ai.com>
 //
 // This file is part of sakura.
 //
@@ -14,21 +14,13 @@
 // You should have received a copy of the GNU General Public License along with
 // sakura. If not, see <https://www.gnu.org/licenses/>.
 
-// sakura - header file --------------------------------------------------------
+// sakura - public header file -------------------------------------------------
 
 #ifndef SAKURA_H
 #define SAKURA_H
 
-#include <stdint.h>
-#ifndef R_NO_REMAP
-#define R_NO_REMAP
-#endif
-#ifndef STRICT_R_HEADERS
-#define STRICT_R_HEADERS
-#endif
 #include <R.h>
 #include <Rinternals.h>
-#include <R_ext/Visibility.h>
 
 typedef struct nano_buf_s {
   unsigned char *buf;
@@ -36,15 +28,7 @@ typedef struct nano_buf_s {
   size_t cur;
 } nano_buf;
 
-#define SAKURA_INIT_BUFSIZE 4096
-#define SAKURA_SERIAL_VER 3
-#define SAKURA_SERIAL_THR 134217728
-#define SAKURA_LD_STRLEN 21
-
-void sakura_serialize(nano_buf *, SEXP, SEXP);
-SEXP sakura_unserialize(unsigned char *, size_t, SEXP);
-
-SEXP sakura_r_serialize(SEXP, SEXP);
-SEXP sakura_r_unserialize(SEXP, SEXP);
+typedef void (*sakura_sfunc)(nano_buf *, SEXP, SEXP);
+typedef SEXP (*sakura_ufunc)(unsigned char *, size_t, SEXP);
 
 #endif
