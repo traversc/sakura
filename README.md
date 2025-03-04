@@ -5,8 +5,10 @@
 
 <!-- badges: start -->
 
-[![R-universe
-status](https://shikokuchuo.r-universe.dev/badges/sakura)](https://shikokuchuo.r-universe.dev/sakura)
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/sakura)](https://CRAN.R-project.org/package=sakura)
 [![R-CMD-check](https://github.com/shikokuchuo/sakura/workflows/R-CMD-check/badge.svg)](https://github.com/shikokuchuo/sakura/actions)
 <!-- badges: end -->
 
@@ -19,13 +21,13 @@ status](https://shikokuchuo.r-universe.dev/badges/sakura)](https://shikokuchuo.r
 ### Extension to R Serialization
 
 Extends the functionality of R serialization by augmenting the built-in
-reference hook system. This enhanced implementation allows optimal,
-one-pass integrated serialization that combines R serialization with
-third-party serialization methods.
+reference hook system. This enhanced implementation allows an integrated
+single-pass operation that combines R serialization with third-party
+serialization methods.
 
 Facilitates the serialization of even complex R objects, which contain
 non-system reference objects, such as those accessed via external
-pointers, for use in parallel and distributed computing.
+pointers, to enable their use in parallel and distributed computing.
 
 This package was a request from a meeting of the [R
 Consortium](https://r-consortium.org/) [Marshalling and Serialization
@@ -36,6 +38,20 @@ common framework for marshalling in R.
 It extracts the functionality embedded within the
 [mirai](https://github.com/shikokuchuo/mirai) async framework for use in
 other contexts.
+
+### Installation
+
+Install the current release from CRAN:
+
+``` r
+install.packages("sakura")
+```
+
+Or the development version using:
+
+``` r
+pak::pak("shikokuchuo/sakura")
+```
 
 ### Overview
 
@@ -125,15 +141,32 @@ cfg <- sakura::serial_config("torch_tensor", torch::torch_serialize, torch::torc
 sakura::unserialize(sakura::serialize(x, cfg), cfg)
 #> [[1]]
 #> torch_tensor
-#>  0.6972
-#>  0.0887
-#>  0.0576
-#>  0.9132
-#>  0.4515
+#>  0.1852
+#>  0.4499
+#>  0.1691
+#>  0.0582
+#>  0.4350
 #> [ CPUFloatType{5} ]
 #> 
 #> [[2]]
-#> [1] 0.79129934 0.31196571 0.70189057 0.53588851 0.00580887
+#> [1] 0.09273602 0.93122941 0.14078535 0.66689408 0.10639710
+```
+
+### C Interface
+
+A C level interface is provided. A public header file `sakura.h` is
+available in `inst/include` for all packages that declare sakura in
+`LinkingTo`. This may be used in the following way:
+
+``` c
+#include <sakura.h>
+
+sakura_sfunc sakura_serialize;
+sakura_ufunc sakura_unserialize;
+
+// runtime initialization:
+sakura_serialize = (sakura_sfunc) R_GetCCallable("sakura", "sakura_serialize");
+sakura_unserialize = (sakura_ufunc) R_GetCCallable("sakura", "sakura_unserialize");
 ```
 
 ### Acknowledgements
@@ -147,14 +180,6 @@ We would like to thank in particular:
   in documenting the serialization interface.
 - [Daniel Falbel](https://github.com/dfalbel) for discussion around an
   efficient solution to serialization and transmission of torch tensors.
-
-### Installation
-
-The current development version is available from R-universe:
-
-``` r
-install.packages("sakura", repos = "https://shikokuchuo.r-universe.dev")
-```
 
 –
 
