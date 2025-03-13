@@ -46,12 +46,12 @@
 #'
 #' @export
 #'
-serialize <- function(x, hook = NULL) .Call(sakura_r_serialize, x, hook)
+serialize <- function(x, hook = NULL) .Call(`_sakura_sakura_r_serialize`, x, hook[[1]], hook[[2]])
 
 #' @rdname serialize
 #' @export
 #'
-unserialize <- function(x, hook = NULL) .Call(sakura_r_unserialize, x, hook)
+unserialize <- function(x, hook = NULL) .Call(`_sakura_sakura_r_unserialize`, x, hook[[3]])
 
 #' Create Serialization Configuration
 #'
