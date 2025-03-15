@@ -48,7 +48,7 @@
 #'
 serialize <- function(x, hook = NULL) {
   if(is.null(hook)) {
-    return(base::serialize(x, NULL))
+    return(base::serialize(x, NULL, xdr=FALSE))
   } else {
     .Call(`_sakura_sakura_r_serialize`, x, hook[[1]], hook[[2]])
   }
