@@ -17,27 +17,20 @@ df <- data.frame(a = 1, b = "a")
 test_type("raw", serialize(df))
 test_class("data.frame", unserialize(serialize(df)))
 test_identical(unserialize(serialize(df)), df)
-test_error(unserialize(raw(1)), "data could not be unserialized")
+test_error(unserialize(raw(1)))
 
-# mock torch serialization
-torch_serialize <- function(x) {
-  as.raw(length(x))
+if (requireNamespace("torch", quietly = TRUE)) {
+  cfg <- serial_config(
+    class = "torch_tensor",
+    sfunc = torch::torch_serialize,
+    ufunc = torch::torch_load
+  )
+  test_type("pairlist", cfg)
+  obj <- list(a = torch::torch_rand(1e3), b = new.env(), vector = runif(1000L))
+  vec <- serialize(obj, cfg)
+  test_type("raw", vec)
+  test_true(all.equal(unserialize(vec, cfg), obj))
 }
-torch_load <- function(x) {
-  lapply(seq_len(as.integer(x)), new.env)
-}
-cfg <- serial_config(
-  class = "torch_tensor",
-  sfunc = torch_serialize,
-  ufunc = torch_load,
-  vec = TRUE
-)
-test_type("pairlist", cfg)
-obj <- list(tensor = new.env(), env = new.env(), vector = runif(1000L))
-class(obj$tensor) <- "torch_tensor"
-vec <- serialize(obj, cfg)
-test_type("raw", vec)
-test_true(all.equal(unserialize(vec, cfg), obj))
 
 if (requireNamespace("arrow", quietly = TRUE)) {
   cfga <- serial_config(

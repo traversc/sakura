@@ -13,7 +13,7 @@ unserialize(x, hook = NULL)
 \item{x}{an object.}
 
 \item{hook}{[default NULL] optionally, a configuration returned by
-\code{\link{serial_config}}.}
+\code{\link[=serial_config]{serial_config()}}.}
 }
 \value{
 For serialize: a raw vector. For unserialize: the unserialized object.
@@ -36,5 +36,10 @@ cfg <- serial_config(
 )
 raw <- serialize(obj, cfg)
 unserialize(raw, cfg)
+\dontshow{\}) # examplesIf}
+\dontshow{if (requireNamespace("torch", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+x <- list(torch::torch_rand(5L), runif(5L))
+cfg <- serial_config("torch_tensor", torch::torch_serialize, torch::torch_load)
+unserialize(serialize(x, cfg), cfg)
 \dontshow{\}) # examplesIf}
 }
