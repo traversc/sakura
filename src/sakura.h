@@ -52,6 +52,7 @@ typedef struct {
     const char * klass_name_used;
 } sexpmap_inherits_result;
 
+// djb2 hash
 static uint32_t sexpmap_hash(const char *s) {
   uint32_t h = 5381u;
   for (unsigned char c; (c = (unsigned char)*s++); )
