@@ -45,8 +45,14 @@
 <li>
 <code><a href="../reference/serial_config.html">serial_config()</a></code> improvements:
 <ul><li>Accepts multiple custom serialization functions for different classes of object (<a href="https://github.com/shikokuchuo/sakura/issues/12" class="external-link">#12</a>).</li>
+<li>Stores package metadata for each entry, inferring it from serializer namespaces when possible.</li>
 <li>Simplified by removing the <code>vec</code> argument, as no longer applicable due to inline serialization.</li>
 </ul></li>
+<li>Added <code><a href="../reference/register_serial.html">register_serial()</a></code> for package-level serializer registration.</li>
+<li>
+<code><a href="../reference/serialize.html">serialize()</a></code>, <code><a href="../reference/serialize.html">unserialize()</a></code>, <code><a href="../reference/serialize.html">save_rds()</a></code> and <code><a href="../reference/serialize.html">read_rds()</a></code> now use only globally registered serializers.</li>
+<li>Custom-serialized payloads now record the package to load during deserialization, and registered packages may be loaded inline as needed.</li>
+<li>Added gzip-streamed <code><a href="../reference/serialize.html">save_rds()</a></code> and <code><a href="../reference/serialize.html">read_rds()</a></code> helpers.</li>
 <li>Each custom-serialized object is no longer limited to a raw vector of length <code>INT_MAX</code>.</li>
 <li>Implements a C level interface by registering C function callables.</li>
 <li>Package is re-licensed under the MIT licence.</li>

@@ -103,16 +103,17 @@
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; Table</span></span>
 <span><span class="co">#&gt; Error: Invalid &lt;Table&gt;, external pointer to null</span></span></code></pre></div>
-<p>In such cases, <code><a href="reference/serial_config.html">sakura::serial_config()</a></code> can be used to create custom serialization configurations, specifying functions that hook into R’s native serialization mechanism for reference objects (‘refhooks’).</p>
+<p>In such cases, <code><a href="reference/register_serial.html">sakura::register_serial()</a></code> can be used to register custom serialization functions that hook into R’s native serialization mechanism for reference objects (‘refhooks’).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cfg</span> <span class="op">&lt;-</span> <span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/serial_config.html">serial_config</a></span><span class="op">(</span></span>
-<span>  <span class="st">"ArrowTabular"</span>,</span>
-<span>  <span class="fu">arrow</span><span class="fu">::</span><span class="va"><a href="https://arrow.apache.org/docs/r/reference/write_to_raw.html" class="external-link">write_to_raw</a></span>,</span>
-<span>  <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">arrow</span><span class="fu">::</span><span class="fu"><a href="https://arrow.apache.org/docs/r/reference/read_ipc_stream.html" class="external-link">read_ipc_stream</a></span><span class="op">(</span><span class="va">x</span>, as_data_frame <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/register_serial.html">register_serial</a></span><span class="op">(</span></span>
+<span>  class <span class="op">=</span> <span class="st">"ArrowTabular"</span>,</span>
+<span>  package <span class="op">=</span> <span class="st">"arrow"</span>,</span>
+<span>  sfunc <span class="op">=</span> <span class="fu">arrow</span><span class="fu">::</span><span class="va"><a href="https://arrow.apache.org/docs/r/reference/write_to_raw.html" class="external-link">write_to_raw</a></span>,</span>
+<span>  ufunc <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">arrow</span><span class="fu">::</span><span class="fu"><a href="https://arrow.apache.org/docs/r/reference/read_ipc_stream.html" class="external-link">read_ipc_stream</a></span><span class="op">(</span><span class="va">x</span>, as_data_frame <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>This configuration can then be supplied as the ‘hook’ argument for <code><a href="reference/serialize.html">sakura::serialize()</a></code> and <code><a href="reference/serialize.html">sakura::unserialize()</a></code>.</p>
+<p>Register the serializer once and <code><a href="reference/serialize.html">sakura::serialize()</a></code> / <code><a href="reference/serialize.html">sakura::unserialize()</a></code> will pick it up automatically. sakura records both the class and package name in the serialized payload so the package can be loaded inline during deserialization.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/serialize.html">unserialize</a></span><span class="op">(</span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/serialize.html">serialize</a></span><span class="op">(</span><span class="va">obj</span>, <span class="va">cfg</span><span class="op">)</span>, <span class="va">cfg</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/serialize.html">unserialize</a></span><span class="op">(</span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/serialize.html">serialize</a></span><span class="op">(</span><span class="va">obj</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; Table</span></span>
 <span><span class="co">#&gt; 150 rows x 5 columns</span></span>
@@ -152,9 +153,14 @@
 <span><span class="co">#&gt; Error in (function (self) : external pointer is not valid</span></span></code></pre></div>
 <p>Base R serialization above fails, but <code>sakura</code> serialization succeeds:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cfg</span> <span class="op">&lt;-</span> <span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/serial_config.html">serial_config</a></span><span class="op">(</span><span class="st">"torch_tensor"</span>, <span class="fu">torch</span><span class="fu">::</span><span class="va"><a href="https://torch.mlverse.org/docs/reference/torch_serialize.html" class="external-link">torch_serialize</a></span>, <span class="fu">torch</span><span class="fu">::</span><span class="va"><a href="https://torch.mlverse.org/docs/reference/torch_load.html" class="external-link">torch_load</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/register_serial.html">register_serial</a></span><span class="op">(</span></span>
+<span>  class <span class="op">=</span> <span class="st">"torch_tensor"</span>,</span>
+<span>  package <span class="op">=</span> <span class="st">"torch"</span>,</span>
+<span>  sfunc <span class="op">=</span> <span class="fu">torch</span><span class="fu">::</span><span class="va"><a href="https://torch.mlverse.org/docs/reference/torch_serialize.html" class="external-link">torch_serialize</a></span>,</span>
+<span>  ufunc <span class="op">=</span> <span class="fu">torch</span><span class="fu">::</span><span class="va"><a href="https://torch.mlverse.org/docs/reference/torch_load.html" class="external-link">torch_load</a></span></span>
+<span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/serialize.html">unserialize</a></span><span class="op">(</span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/serialize.html">serialize</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">cfg</span><span class="op">)</span>, <span class="va">cfg</span><span class="op">)</span></span>
+<span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/serialize.html">unserialize</a></span><span class="op">(</span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/serialize.html">serialize</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; torch_tensor</span></span>
 <span><span class="co">#&gt;  0.3755</span></span>
@@ -166,16 +172,30 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[2]]</span></span>
 <span><span class="co">#&gt; [1] 0.4271107 0.5690996 0.8724742 0.8202838 0.3796990</span></span></code></pre></div>
+<p>Packages can also self-register on load so that explicit hooks are not required at the call site:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/register_serial.html">register_serial</a></span><span class="op">(</span></span>
+<span>  class <span class="op">=</span> <span class="st">"torch_tensor"</span>,</span>
+<span>  package <span class="op">=</span> <span class="st">"torch"</span>,</span>
+<span>  sfunc <span class="op">=</span> <span class="fu">torch</span><span class="fu">::</span><span class="va"><a href="https://torch.mlverse.org/docs/reference/torch_serialize.html" class="external-link">torch_serialize</a></span>,</span>
+<span>  ufunc <span class="op">=</span> <span class="fu">torch</span><span class="fu">::</span><span class="va"><a href="https://torch.mlverse.org/docs/reference/torch_load.html" class="external-link">torch_load</a></span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>If another package wants to register before <code>sakura</code> is loaded, it can call <code>setHook(packageEvent("sakura", "onLoad"), ...)</code> from its own <code>.onLoad()</code> and register at that point.</p>
+<p>For file storage, <code><a href="reference/serialize.html">sakura::save_rds()</a></code> and <code><a href="reference/serialize.html">sakura::read_rds()</a></code> stream the serialized bytes through gzip-compressed files:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".RDS"</span><span class="op">)</span></span>
+<span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/serialize.html">save_rds</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">path</span><span class="op">)</span></span>
+<span><span class="fu">sakura</span><span class="fu">::</span><span class="fu"><a href="reference/serialize.html">read_rds</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="c-interface">C Interface<a class="anchor" aria-label="anchor" href="#c-interface"></a>
 </h3>
 <p>A low-level interface is provided for use by other packages. The following C callables are registered:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>sakura_serialize_init<span class="op">;</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>sakura_unserialize_init<span class="op">;</span></span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>sakura_serialize<span class="op">;</span></span>
-<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>sakura_unserialize<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>sakura_serialize_init<span class="op">;</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>sakura_unserialize_init<span class="op">;</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>sakura_serialize<span class="op">;</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>sakura_unserialize<span class="op">;</span></span></code></pre></div>
 <p>Their function signatures may be inspected in <code>src/sakura.h</code>.</p>
 </div>
 <div class="section level3">

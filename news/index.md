@@ -11,8 +11,27 @@
   - Accepts multiple custom serialization functions for different
     classes of object
     ([\#12](https://github.com/shikokuchuo/sakura/issues/12)).
+  - Stores package metadata for each entry, inferring it from serializer
+    namespaces when possible.
   - Simplified by removing the `vec` argument, as no longer applicable
     due to inline serialization.
+- Added
+  [`register_serial()`](https://shikokuchuo.net/sakura/reference/register_serial.md)
+  for package-level serializer registration.
+- [`serialize()`](https://shikokuchuo.net/sakura/reference/serialize.md),
+  [`unserialize()`](https://shikokuchuo.net/sakura/reference/serialize.md),
+  [`save_rds()`](https://shikokuchuo.net/sakura/reference/serialize.md)
+  and
+  [`read_rds()`](https://shikokuchuo.net/sakura/reference/serialize.md)
+  now use only globally registered serializers.
+- Custom-serialized payloads now record the package to load during
+  deserialization, and registered packages may be loaded inline as
+  needed.
+- Added gzip-streamed
+  [`save_rds()`](https://shikokuchuo.net/sakura/reference/serialize.md)
+  and
+  [`read_rds()`](https://shikokuchuo.net/sakura/reference/serialize.md)
+  helpers.
 - Each custom-serialized object is no longer limited to a raw vector of
   length `INT_MAX`.
 - Implements a C level interface by registering C function callables.

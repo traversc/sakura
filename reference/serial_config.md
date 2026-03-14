@@ -3,12 +3,15 @@
 Returns a serialization configuration for custom serialization and
 unserialization of non-system reference objects, using the 'refhook'
 system of R native serialization. This allows their use across different
-R sessions.
+R sessions. Each entry records both the class name and the package name
+to load during deserialization. The package may be inferred from `sfunc`
+and `ufunc` when those functions come from the same package namespace,
+otherwise it must be supplied explicitly.
 
 ## Usage
 
 ``` r
-serial_config(class, sfunc, ufunc)
+serial_config(class, package = NULL, sfunc = NULL, ufunc = NULL)
 ```
 
 ## Arguments
@@ -17,7 +20,13 @@ serial_config(class, sfunc, ufunc)
 
   a character string (or vector) of the class of object custom
   serialization functions are applied to, e.g. `'ArrowTabular'` or
-  `c('torch_tensor', 'ArrowTabular')`.
+  `c("torch_tensor", "ArrowTabular")`.
+
+- package:
+
+  a character string (or vector) naming the package that should be
+  loaded before deserializing objects for each class. May be inferred
+  when `sfunc` and `ufunc` both come from the same package namespace.
 
 - sfunc:
 
@@ -31,51 +40,32 @@ serial_config(class, sfunc, ufunc)
 
 ## Value
 
-A list comprising the configuration. This may be provided to the `hook`
-argument of
-[`serialize()`](https://shikokuchuo.net/sakura/reference/serialize.md)
-and
-[`unserialize()`](https://shikokuchuo.net/sakura/reference/serialize.md).
+A list comprising the configuration.
 
 ## Examples
 
 ``` r
-serial_config("test_class", base::serialize, base::unserialize)
-#> [[1]]
+serial_config(
+  class = "test_class",
+  package = "base",
+  sfunc = function(x) base::serialize(x, NULL),
+  ufunc = base::unserialize
+)
+#> $class
 #> [1] "test_class"
 #> 
-#> [[2]]
-#> [[2]][[1]]
-#> function (object, connection, ascii = FALSE, xdr = TRUE, version = NULL, 
-#>     refhook = NULL) 
-#> {
-#>     if (!is.null(connection)) {
-#>         if (!inherits(connection, "connection")) 
-#>             stop("'connection' must be a connection")
-#>         if (missing(ascii)) 
-#>             ascii <- summary(connection)$text == "text"
-#>     }
-#>     if (!ascii && inherits(connection, "sockconn")) 
-#>         .Internal(serializeb(object, connection, xdr, version, 
-#>             refhook))
-#>     else {
-#>         type <- if (is.na(ascii)) 
-#>             2L
-#>         else if (ascii) 
-#>             1L
-#>         else if (!xdr) 
-#>             3L
-#>         else 0L
-#>         .Internal(serialize(object, connection, type, version, 
-#>             refhook))
-#>     }
-#> }
-#> <bytecode: 0x560fa6f99780>
-#> <environment: namespace:base>
+#> $package
+#> [1] "base"
+#> 
+#> $sfunc
+#> $sfunc[[1]]
+#> function (x) 
+#> base::serialize(x, NULL)
+#> <environment: 0x563eed9fffe8>
 #> 
 #> 
-#> [[3]]
-#> [[3]][[1]]
+#> $ufunc
+#> $ufunc[[1]]
 #> function (connection, refhook = NULL) 
 #> {
 #>     if (typeof(connection) != "raw" && !is.character(connection) && 
@@ -83,79 +73,42 @@ serial_config("test_class", base::serialize, base::unserialize)
 #>         stop("'connection' must be a connection")
 #>     .Internal(unserialize(connection, refhook))
 #> }
-#> <bytecode: 0x560fa9c5f830>
+#> <bytecode: 0x563ee67c7060>
 #> <environment: namespace:base>
 #> 
 #> 
+#> attr(,"class")
+#> [1] "sakura_serial_config"
 
 serial_config(
-  c("class_one", "class_two"),
-  list(base::serialize, base::serialize),
-  list(base::unserialize, base::unserialize)
+  class = c("class_one", "class_two"),
+  package = c("base", "base"),
+  sfunc = list(
+    function(x) base::serialize(x, NULL),
+    function(x) base::serialize(x, NULL)
+  ),
+  ufunc = list(base::unserialize, base::unserialize)
 )
-#> [[1]]
+#> $class
 #> [1] "class_one" "class_two"
 #> 
-#> [[2]]
-#> [[2]][[1]]
-#> function (object, connection, ascii = FALSE, xdr = TRUE, version = NULL, 
-#>     refhook = NULL) 
-#> {
-#>     if (!is.null(connection)) {
-#>         if (!inherits(connection, "connection")) 
-#>             stop("'connection' must be a connection")
-#>         if (missing(ascii)) 
-#>             ascii <- summary(connection)$text == "text"
-#>     }
-#>     if (!ascii && inherits(connection, "sockconn")) 
-#>         .Internal(serializeb(object, connection, xdr, version, 
-#>             refhook))
-#>     else {
-#>         type <- if (is.na(ascii)) 
-#>             2L
-#>         else if (ascii) 
-#>             1L
-#>         else if (!xdr) 
-#>             3L
-#>         else 0L
-#>         .Internal(serialize(object, connection, type, version, 
-#>             refhook))
-#>     }
-#> }
-#> <bytecode: 0x560fa6f99780>
-#> <environment: namespace:base>
+#> $package
+#> [1] "base" "base"
 #> 
-#> [[2]][[2]]
-#> function (object, connection, ascii = FALSE, xdr = TRUE, version = NULL, 
-#>     refhook = NULL) 
-#> {
-#>     if (!is.null(connection)) {
-#>         if (!inherits(connection, "connection")) 
-#>             stop("'connection' must be a connection")
-#>         if (missing(ascii)) 
-#>             ascii <- summary(connection)$text == "text"
-#>     }
-#>     if (!ascii && inherits(connection, "sockconn")) 
-#>         .Internal(serializeb(object, connection, xdr, version, 
-#>             refhook))
-#>     else {
-#>         type <- if (is.na(ascii)) 
-#>             2L
-#>         else if (ascii) 
-#>             1L
-#>         else if (!xdr) 
-#>             3L
-#>         else 0L
-#>         .Internal(serialize(object, connection, type, version, 
-#>             refhook))
-#>     }
-#> }
-#> <bytecode: 0x560fa6f99780>
-#> <environment: namespace:base>
+#> $sfunc
+#> $sfunc[[1]]
+#> function (x) 
+#> base::serialize(x, NULL)
+#> <environment: 0x563eed9fffe8>
+#> 
+#> $sfunc[[2]]
+#> function (x) 
+#> base::serialize(x, NULL)
+#> <environment: 0x563eed9fffe8>
 #> 
 #> 
-#> [[3]]
-#> [[3]][[1]]
+#> $ufunc
+#> $ufunc[[1]]
 #> function (connection, refhook = NULL) 
 #> {
 #>     if (typeof(connection) != "raw" && !is.character(connection) && 
@@ -163,10 +116,10 @@ serial_config(
 #>         stop("'connection' must be a connection")
 #>     .Internal(unserialize(connection, refhook))
 #> }
-#> <bytecode: 0x560fa9c5f830>
+#> <bytecode: 0x563ee67c7060>
 #> <environment: namespace:base>
 #> 
-#> [[3]][[2]]
+#> $ufunc[[2]]
 #> function (connection, refhook = NULL) 
 #> {
 #>     if (typeof(connection) != "raw" && !is.character(connection) && 
@@ -174,8 +127,10 @@ serial_config(
 #>         stop("'connection' must be a connection")
 #>     .Internal(unserialize(connection, refhook))
 #> }
-#> <bytecode: 0x560fa9c5f830>
+#> <bytecode: 0x563ee67c7060>
 #> <environment: namespace:base>
 #> 
 #> 
+#> attr(,"class")
+#> [1] "sakura_serial_config"
 ```
