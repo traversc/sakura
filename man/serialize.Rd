@@ -3,24 +3,36 @@
 \name{serialize}
 \alias{serialize}
 \alias{unserialize}
+\alias{save_rds}
+\alias{read_rds}
 \title{Serialize}
 \usage{
-serialize(x, hook = NULL)
+serialize(x)
 
-unserialize(x, hook = NULL)
+unserialize(x)
+
+save_rds(x, file)
+
+read_rds(file)
 }
 \arguments{
 \item{x}{an object.}
 
-\item{hook}{[default NULL] optionally, a configuration returned by
-\code{\link[=serial_config]{serial_config()}}.}
+\item{file}{a file path.}
 }
 \value{
 For serialize: a raw vector. For unserialize: the unserialized object.
+
+\code{save_rds()} returns invisible \code{NULL}. \code{read_rds()} returns the
+unserialized object.
 }
 \description{
 An extension of R native serialization using the 'refhook' system for custom
 serialization and unserialization of non-system reference objects.
+Registered configurations from \code{\link[=register_serial]{register_serial()}} are applied automatically,
+and each custom-serialized object records both its class and package name so
+the package can be loaded during deserialization before dispatching to the
+matching unserializer.
 }
 \examples{
 vec <- serialize(data.frame())
@@ -29,26 +41,45 @@ unserialize(vec)
 
 \dontshow{if (requireNamespace("arrow", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 obj <- list(arrow::as_arrow_table(iris), arrow::as_arrow_table(mtcars))
-cfg <- serial_config(
-  "ArrowTabular",
-  arrow::write_to_raw,
-  function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE)
+register_serial(
+  class = "ArrowTabular",
+  package = "arrow",
+  sfunc = arrow::write_to_raw,
+  ufunc = function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE)
 )
-raw <- serialize(obj, cfg)
-unserialize(raw, cfg)
+raw <- serialize(obj)
+unserialize(raw)
 \dontshow{\}) # examplesIf}
 \dontshow{if (requireNamespace("torch", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 x <- list(torch::torch_rand(5L), runif(5L))
-cfg <- serial_config("torch_tensor", torch::torch_serialize, torch::torch_load)
-unserialize(serialize(x, cfg), cfg)
+register_serial(
+  class = "torch_tensor",
+  package = "torch",
+  sfunc = torch::torch_serialize,
+  ufunc = torch::torch_load
+)
+unserialize(serialize(x))
 \dontshow{\}) # examplesIf}
 \dontshow{if (requireNamespace("arrow", quietly = TRUE) && requireNamespace("torch", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-cfg <- serial_config(
-  c("torch_tensor", "ArrowTabular"),
-  list(torch::torch_serialize, arrow::write_to_raw),
-  list(torch::torch_load, function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE))
+register_serial(
+  class = c("torch_tensor", "ArrowTabular"),
+  package = c("torch", "arrow"),
+  sfunc = list(torch::torch_serialize, arrow::write_to_raw),
+  ufunc = list(torch::torch_load, function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE))
 )
 y <- list(torch::torch_rand(5L), runif(5L), arrow::as_arrow_table(iris))
-unserialize(serialize(y, cfg), cfg)
+unserialize(serialize(y))
+\dontshow{\}) # examplesIf}
+\dontshow{if (requireNamespace("torch", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+path <- tempfile(fileext = ".RDS")
+x <- list(torch::torch_rand(5L), runif(5L))
+register_serial(
+  class = "torch_tensor",
+  package = "torch",
+  sfunc = torch::torch_serialize,
+  ufunc = torch::torch_load
+)
+save_rds(x, path)
+read_rds(path)
 \dontshow{\}) # examplesIf}
 }

@@ -3,7 +3,6 @@
 .RData
 .Ruserdata
 *.log
-src/Makevars
 sakura.Rcheck/00_pkg_src/sakura/
 sakura.Rcheck/
 *.gz
@@ -12,3 +11,4 @@ install
 inst/doc
 compile_commands.json
 .cache
+context/

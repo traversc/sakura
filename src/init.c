@@ -6,7 +6,9 @@ SEXP sakura_bundle;
 
 static const R_CallMethodDef callMethods[] = {
   {"sakura_r_serialize", (DL_FUNC) &sakura_r_serialize, 2},
-  {"sakura_r_unserialize", (DL_FUNC) &sakura_r_unserialize, 2},
+  {"sakura_r_unserialize", (DL_FUNC) &sakura_r_unserialize, 1},
+  {"sakura_r_save_rds", (DL_FUNC) &sakura_r_save_rds, 3},
+  {"sakura_r_read_rds", (DL_FUNC) &sakura_r_read_rds, 1},
   {NULL, NULL, 0}
 };
 

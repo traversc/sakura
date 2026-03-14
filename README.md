@@ -73,23 +73,26 @@ unserialize(serialize(obj, NULL))
 #> Error: Invalid <Table>, external pointer to null
 ```
 
-In such cases, `sakura::serial_config()` can be used to create custom
-serialization configurations, specifying functions that hook into R’s
-native serialization mechanism for reference objects (‘refhooks’).
+In such cases, `sakura::register_serial()` can be used to register
+custom serialization functions that hook into R’s native serialization
+mechanism for reference objects (‘refhooks’).
 
 ``` r
-cfg <- sakura::serial_config(
-  "ArrowTabular",
-  arrow::write_to_raw,
-  function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE)
+sakura::register_serial(
+  class = "ArrowTabular",
+  package = "arrow",
+  sfunc = arrow::write_to_raw,
+  ufunc = function(x) arrow::read_ipc_stream(x, as_data_frame = FALSE)
 )
 ```
 
-This configuration can then be supplied as the ‘hook’ argument for
-`sakura::serialize()` and `sakura::unserialize()`.
+Register the serializer once and `sakura::serialize()` /
+`sakura::unserialize()` will pick it up automatically. sakura records
+both the class and package name in the serialized payload so the package
+can be loaded inline during deserialization.
 
 ``` r
-sakura::unserialize(sakura::serialize(obj, cfg), cfg)
+sakura::unserialize(sakura::serialize(obj))
 #> [[1]]
 #> Table
 #> 150 rows x 5 columns
@@ -136,9 +139,14 @@ unserialize(serialize(x, NULL))
 Base R serialization above fails, but `sakura` serialization succeeds:
 
 ``` r
-cfg <- sakura::serial_config("torch_tensor", torch::torch_serialize, torch::torch_load)
+sakura::register_serial(
+  class = "torch_tensor",
+  package = "torch",
+  sfunc = torch::torch_serialize,
+  ufunc = torch::torch_load
+)
 
-sakura::unserialize(sakura::serialize(x, cfg), cfg)
+sakura::unserialize(sakura::serialize(x))
 #> [[1]]
 #> torch_tensor
 #>  0.3755
@@ -150,6 +158,31 @@ sakura::unserialize(sakura::serialize(x, cfg), cfg)
 #> 
 #> [[2]]
 #> [1] 0.4271107 0.5690996 0.8724742 0.8202838 0.3796990
+```
+
+Packages can also self-register on load so that explicit hooks are not
+required at the call site:
+
+``` r
+sakura::register_serial(
+  class = "torch_tensor",
+  package = "torch",
+  sfunc = torch::torch_serialize,
+  ufunc = torch::torch_load
+)
+```
+
+If another package wants to register before `sakura` is loaded, it can
+call `setHook(packageEvent("sakura", "onLoad"), ...)` from its own
+`.onLoad()` and register at that point.
+
+For file storage, `sakura::save_rds()` and `sakura::read_rds()` stream
+the serialized bytes through gzip-compressed files:
+
+``` r
+path <- tempfile(fileext = ".RDS")
+sakura::save_rds(x, path)
+sakura::read_rds(path)
 ```
 
 ### C Interface
